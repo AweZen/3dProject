@@ -46,18 +46,20 @@ public:
 	ObjectData(ObjectType type, float size, glm::mat4 posInWorld);
 	~ObjectData();
 	void setTexture(const char* fileName);
-	void draw();
+	void draw(GLuint ShaderProgram, float delta, float rotateAmount);
 	void init();
 	GLuint VB, IB, VA;
 private:
+	ObjectType type;
 	Vertex * vertices;
 	GLuint nrOfV;
+	float rotation = 0.f;
 	unsigned int * indices;
 	unsigned char *image;
 	GLuint nrOfI;
 	GLuint texture;
 	int width, height;
-
+	glm::mat4 modelMatrix;
 	GLsizeiptr vertexBufferSize()const {
 		return (nrOfV * sizeof(Vertex));
 	}
@@ -66,9 +68,10 @@ private:
 	}
 };
 
-ObjectData::ObjectData(ObjectType type ,float size, glm::mat4 posInWorld)
+ObjectData::ObjectData(ObjectType Objtype ,float size, glm::mat4 posInWorld)
 {
-	std::cout << type << std::endl;
+	modelMatrix = posInWorld;
+	type = Objtype;
 	switch (type)
 	{
 	case Quad:
@@ -77,7 +80,7 @@ ObjectData::ObjectData(ObjectType type ,float size, glm::mat4 posInWorld)
 
 		Vertex vertexData[] =
 		{
-		glm::vec3(0,	   0, 0), glm::vec3(1, 1, 1), glm::vec2(0, 1), glm::vec3(0,0,1),
+		glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec2(0, 1), glm::vec3(0,0,1),
 		glm::vec3(0, size, 0), glm::vec3(1, 1, 1), glm::vec2(0, 0), glm::vec3(0,0,1),
 		glm::vec3(size, size, 0), glm::vec3(1, 1, 1), glm::vec2(1, 0), glm::vec3(0,0,1),
 		glm::vec3(size,    0, 0), glm::vec3(1, 1, 1), glm::vec2(1, 1), glm::vec3(0,0,1)
@@ -118,15 +121,15 @@ ObjectData::ObjectData(ObjectType type ,float size, glm::mat4 posInWorld)
 			 { { size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { 0, -1, 0 } },
 			 { { size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { 0, -1, 0 } },
 			 //RIGHT
-			 { { size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { 1, 0, 0 } },
-			 { { size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, { 1, 0, 0 } },
-			 { { size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { 1, 0, 0 } },
-			 { { size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { 1, 0, 0 } },
+			 { { size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { -1, 0, 0 } },
+			 { { size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, { -1, 0, 0 } },
+			 { { size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { -1, 0, 0 } },
+			 { { size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { -1, 0, 0 } },
 			 //LEFT                                                                  
-			 { {-size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { -1, 0, 0 } },
-			 { {-size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, { -1, 0, 0 } },
-			 { {-size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { -1, 0, 0 } },
-			 { {-size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { -1, 0, 0 } }
+			 { {-size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { 1, 0, 0 } },
+			 { {-size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, { 1, 0, 0 } },
+			 { {-size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { 1, 0, 0 } },
+			 { {-size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { 1, 0, 0 } }
 
 		};
 
@@ -174,81 +177,95 @@ ObjectData::~ObjectData()
 
 void ObjectData::setTexture(const char * fileName)
 {
-	std::cout << "tex: " << std::endl;
 
 	// Bind texture
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	// Set our texture parameters	std::cout << "tex: " << std::endl;
-	std::cout << "tex: " << std::endl;
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	std::cout << "tex: " << std::endl;
-
 	// Set texture filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	std::cout << "tex: " << std::endl;
 
 	// Load, create texture and generate mipmaps
 	image = SOIL_load_image(fileName, &width, &height, 0, SOIL_LOAD_RGBA);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &image);
+
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
 	glGenerateMipmap(GL_TEXTURE_2D);
+
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	std::cout << "tex: " << std::endl;
 
 	glUniform1i(glGetUniformLocation(GL_FRAGMENT_SHADER, "myTex"), 0);
-	std::cout << "tex: " << std::endl;
 
 }
 
-void ObjectData::draw()
+void ObjectData::draw(GLuint ShaderProgram, float delta, float rotateAmount)
 {
-	std::cout << "draw: " << std::endl;
 	glBindVertexArray(VA);
-	std::cout << "draw: " << nrOfI << std::endl;
+	if (rotateAmount > 0) {
+		rotation = rotateAmount * delta * 2;
+		modelMatrix = glm::rotate(modelMatrix, rotation, glm::vec3(0, 1, 0));
+	/*	switch (type)
+		{
+		case Quad:
+			vertices[3].normal = vertices[2].normal = vertices[1].normal = vertices[0].normal = cross(vertices[0].postion - vertices[1].postion, vertices[2].postion - vertices[1].postion);
+			init();
+			break;
+		case Cube:
+			for (int i = 0; i > 6; i++) {
+				vertices[3+i*4].normal = vertices[2 + i * 4].normal = vertices[1 + i * 4].normal = vertices[0 + i * 4].normal = cross(vertices[0 + i * 4].postion - vertices[1 + i * 4].postion, vertices[2 + i * 4].postion - vertices[1 + i * 4].postion);
+			}
+			std::cout << vertices[4].normal.x << "   " << vertices[4].normal.y << "   " << vertices[4].normal.z << std::endl;
+			init();
+			break;
+		case Plane:
+			break;
+		default:
+			break;
+		}*/
+		
+	}
+	//glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	glUniformMatrix4fv(glGetUniformLocation(ShaderProgram, "world") , 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
 	glDrawElements(GL_TRIANGLES, nrOfI, GL_UNSIGNED_INT, (void*)0);
 	glBindVertexArray(0);
 }
 
-inline void ObjectData::init()
+void ObjectData::init()
 {
-	std::cout << "init: " << std::endl;
 
 	//Bind VertexArray
 	glGenVertexArrays(1, &VA);
 	glBindVertexArray(VA);
-	std::cout << "init: " << std::endl;
 
 	//Bind VertexBuffer & IndexBuffer
 	glGenBuffers(1, &VB);
 	glBindBuffer(GL_ARRAY_BUFFER, VB);
 	glBufferData(GL_ARRAY_BUFFER, vertexBufferSize(), vertices, GL_STATIC_DRAW);
-	std::cout << "init: " << std::endl;
 
 	glGenBuffers(1, &IB);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferSize(), indices, GL_STATIC_DRAW);
-	std::cout << "init: " << std::endl;
 
 	// write vertex data to memory
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
-	std::cout << "init: " << std::endl;
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 3));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 6));
-	std::cout << "init: " << std::endl;
-
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 8));
 
 }
+

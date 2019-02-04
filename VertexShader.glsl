@@ -10,22 +10,21 @@ out Vertex_Out {
 	vec2 tex;
 	vec3 normal;
 } _out;
-
 uniform mat4 world;
 uniform mat4 view;
 uniform mat4 proj;
 
-vec3 inWorld(vec3 pos)
-{
-	 return vec3(world * vec4(pos, 1));
-}
+
 
 void main()
 {
-	mat4 pvw = proj * view * world;
-	gl_Position   = pvw * vec4(position , 1);
-	_out.position = inWorld(position);
+	mat4 mvp = proj * view * world;
+	mat3 normalMatrix = mat3(world);
+	normalMatrix = inverse(normalMatrix);
+	normalMatrix = transpose(normalMatrix);
+	gl_Position   = mvp * vec4(position , 1);
+	_out.position = vec3(world * vec4(position, 1.0));
 	_out.color    = color;
     _out.tex      = tex;
-	_out.normal   = normalize(normal);
+	_out.normal   = normalize(normal * normalMatrix);
 } 

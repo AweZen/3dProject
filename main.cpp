@@ -54,6 +54,8 @@ float deltaTime;
 float timeSinceJump;
 float gFloat     = 0.0f;
 float gIncrement = 0.0f;
+float gIncrement2 = 0.0f;
+
 float rotation   = 0.0f;
 float lastTime   = 0;
 float initialFoV = 45.0f;
@@ -155,12 +157,6 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 			position + direction,	// and looks at the origin
 			up);					// Head is up (set to 0,-1,0 to look upside-down)
 
-		paralell = glm::vec3(
-			sin(horizontalAngle - 3.14f / 2.0f),
-			0,
-			cos(horizontalAngle - 3.14f / 2.0f)
-		);
-
 		GLuint MatrixIDPos  = glGetUniformLocation(ShaderProgram, "pos");
 		GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
 		glUniform3fv(MatrixIDPos,  1,  glm::value_ptr(position));
@@ -187,13 +183,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 void rotateMatrix(float time) {
-	rotation -= gIncrement * deltaTime * 2;
-	glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	glm::mat4 rotationMatrix = glm::rotate(scaleMatrix, rotation, glm::vec3(0, 1, 0));
-	pvw.World = rotationMatrix;
-
-	GLuint MatrixIDWorld = glGetUniformLocation(ShaderProgram, "world");
-	glUniformMatrix4fv(MatrixIDWorld, 1, GL_FALSE, glm::value_ptr(pvw.World));
 
 }
 
@@ -216,7 +205,7 @@ void createMatrix() {
 	glUniformMatrix4fv(MatrixIDWorld, 1, GL_FALSE, glm::value_ptr(pvw.World));
 	glUniformMatrix4fv(MatrixIDProj,  1, GL_FALSE, glm::value_ptr(pvw.Projection));
 	glUniform4fv(ambientLight, 1, value_ptr(glm::vec4(0.05f, 0.05f, 0.05f, 1.0f)));
-	glUniform3fv(lightPosition, 1, value_ptr(glm::vec3(2, 10, 10)));
+	glUniform3fv(lightPosition, 1, value_ptr(glm::vec3(2, 2, 2)));
 	glUniform3fv(lightColor,    1, value_ptr(glm::vec3(1, 1, 1)));
 	glUniform3fv(offset,        1, value_ptr(glm::vec3(0, 0, 2)));
 
@@ -278,13 +267,13 @@ void CreateObject()
 	//testP = new Plane(10, pvw.World);
 	//testP->initVAO();
 
-	quad = new ObjectData(Quad, 2, pvw.World);
+	quad = new ObjectData(Cube, 2, pvw.World);
 	quad->init();
-	//quad->setTexture("res/doge.jpg");
+	quad->setTexture("res/doge.jpg");
 
-	/*plane = new ObjectData(Plane, 2, pvw.World);
+	plane = new ObjectData(Plane, 20, pvw.World);
 	plane->init();
-	plane->setTexture("res/image2.jpg");*/
+	plane->setTexture("res/image2.jpg");
 }
 
 int SetupGlfw()
@@ -373,6 +362,8 @@ void Render()
 		ImGui::Checkbox("Secret porn folder", &show_demo_window);
 		ImGui::Checkbox("Dont look?", &show_another_window);
 		ImGui::SliderFloat("Warning, Computer might explode", &gIncrement, 0.0f, 1.0f);
+		ImGui::SliderFloat("Warning, Computer might explode 2", &gIncrement2, 0.0f, 1.0f);
+
 		ImGui::ColorEdit3("Dont touch. I DARE YOU", (float*)&gClearColour);
 		if (ImGui::Button("Wanna die? press here"))
 			counter++;
@@ -410,8 +401,11 @@ void Render()
 	/*testC->render();*/
 	//testP->render();
 	
+	quad->draw(ShaderProgram,deltaTime, gIncrement);
+	plane->draw(ShaderProgram, deltaTime, gIncrement2);
+
+
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	quad->draw();
 	glfwMakeContextCurrent(window);
 	glfwSwapBuffers(window);
 }

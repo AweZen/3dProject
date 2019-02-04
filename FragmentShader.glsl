@@ -20,8 +20,8 @@ uniform vec3 pos;
 void main () {
 	//Diffuse
 	vec3 lightVector = normalize(lightPosition - _in.position);
-	float brightness = dot( lightVector,normalize(_in.normal));
-	vec4 diffuseLight = vec4(brightness, brightness, brightness, 0.1f);
+	float brightness = dot(lightVector,_in.normal);
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0f);
 
 	//Specular
 	vec3 reflectVec = reflect(-lightVector, _in.normal);
@@ -36,7 +36,9 @@ void main () {
 //	vec3 posToViewDir = normalize(_in.position - pos);
 //	float specular = pow(max(dot(posToViewDir,reflectVec),0),2); 
 
-//	fragmentColor = texture(myTex, _in.tex) * vec4(_in.color * lightColor , 0);	
-	fragmentColor = clamp(diffuseLight + specular , 0.05f, 1)  * texture(myTex, _in.tex) 
-				  * vec4(_in.color * lightColor , 0);
+	//fragmentColor = texture(myTex, _in.tex) * vec4(_in.color * lightColor , 0);	
+
+	//fragmentColor = texture(myTex, _in.tex)  * max(vec4(_in.color,1 )* diffuseLight + vec4( _in.color,1) * ambientLight,vec4(0));
+	
+	fragmentColor = max(diffuseLight * vec4(_in.color * lightColor,1)* texture(myTex, _in.tex) + specular * vec4(_in.color * lightColor,1) *  texture(myTex, _in.tex),0);//clamp(diffuseLight + specular , 0.05f, 1)  * texture(myTex, _in.tex)  * vec4(_in.color * lightColor , 0);
 }

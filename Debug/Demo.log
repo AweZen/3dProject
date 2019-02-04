@@ -1,6 +1,6 @@
 ﻿  main.cpp
-c:\users\erike\desktop\v10\bas\main.cpp(308): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\erike\desktop\v10\bas\main.cpp(454): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erike\desktop\v10\bas\main.cpp(463): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erike\desktop\v10\bas\main.cpp(487): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erike\desktop\v10\bas\main.cpp(297): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\erike\desktop\v10\bas\main.cpp(448): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erike\desktop\v10\bas\main.cpp(457): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erike\desktop\v10\bas\main.cpp(481): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Demo.vcxproj -> C:\Users\erike\Desktop\V10\Bas\Debug\Demo.exe
