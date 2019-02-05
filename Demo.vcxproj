@@ -137,6 +137,10 @@
     <None Include="FragmentShader.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </None>
+    <None Include="GeoPass.frag" />
+    <None Include="GeoPass.vert" />
+    <None Include="LightPass.frag" />
+    <None Include="LightPass.vert" />
     <None Include="VertexShader.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </None>

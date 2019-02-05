@@ -195,7 +195,7 @@ void createMatrix() {
 	glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	pvw.World = scaleMatrix;
 
-	pvw.Projection = glm::perspective(3.14f * 0.45f, (float)WIDTH / (float)HEIGHT, 0.1f, 20.0f);
+	pvw.Projection = glm::perspective(3.14f * 0.45f, (float)WIDTH / (float)HEIGHT, 0.1f, 500.0f);
 	cursor_position_callback(window, WIDTH / 2, HEIGHT / 2);
 	EnableMouse = false;
 
@@ -210,7 +210,7 @@ void createMatrix() {
 	glUniformMatrix4fv(MatrixIDWorld, 1, GL_FALSE, glm::value_ptr(pvw.World));
 	glUniformMatrix4fv(MatrixIDProj,  1, GL_FALSE, glm::value_ptr(pvw.Projection));
 	glUniform4fv(ambientLight, 1, value_ptr(glm::vec4(0.05f, 0.05f, 0.05f, 1.0f)));
-	glUniform3fv(lightPosition, 1, value_ptr(glm::vec3(2, 5, 10)));
+	glUniform3fv(lightPosition, 1, value_ptr(glm::vec3(200, 200,200)));
 	glUniform3fv(lightColor,    1, value_ptr(glm::vec3(1, 1, 1)));
 	glUniform3fv(offset,        1, value_ptr(glm::vec3(0, 0, 2)));
 
@@ -272,11 +272,11 @@ void CreateObject()
 	//testP = new Plane(10, pvw.World);
 	//testP->initVAO();
 
-	quad = new ObjectData(Cube, 2, pvw.World);
+	quad = new ObjectData(Cube, 200, pvw.World);
 	quad->init();
-	quad->setTexture("res/doge.jpg");
+	quad->setTexture("res/Sky.jpg");
 
-	plane = new ObjectData(Plane, 2, pvw.World);
+	plane = new ObjectData(Plane, 200, pvw.World);
 	plane->init();
 	plane->setTexture("res/image2.jpg");
 
@@ -404,12 +404,11 @@ void Render()
 	glUniform3fv(gUniformColourLoc, 1, &gUniformColour[0]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 
 	//testQ->render();
 	/*testC->render();*/
 	//testP->render();
-	
 	quad->draw(ShaderProgram,deltaTime, gIncrement);
 	plane->draw(ShaderProgram, deltaTime, gIncrement2);
 

@@ -53,6 +53,18 @@
     <None Include="VertexShader.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="GeoPass.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="GeoPass.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="LightPass.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="LightPass.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
