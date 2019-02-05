@@ -40,5 +40,5 @@ void main () {
 
 	//fragmentColor = texture(myTex, _in.tex)  * max(vec4(_in.color,1 )* diffuseLight + vec4( _in.color,1) * ambientLight,vec4(0));
 	
-	fragmentColor = max(diffuseLight * vec4(_in.color * lightColor,1)* texture(myTex, _in.tex) + specular * vec4(_in.color * lightColor,1) *  texture(myTex, _in.tex),0);//clamp(diffuseLight + specular , 0.05f, 1)  * texture(myTex, _in.tex)  * vec4(_in.color * lightColor , 0);
+	fragmentColor = max(diffuseLight * vec4(_in.color * lightColor,1)* texture(myTex, _in.tex) + specular * vec4(_in.color * lightColor,1) *  texture(myTex, _in.tex),texture(myTex, _in.tex)*0.0001);//clamp(diffuseLight + specular , 0.05f, 1)  * texture(myTex, _in.tex)  * vec4(_in.color * lightColor , 0);
 }

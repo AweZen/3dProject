@@ -1,6 +1,8 @@
 ﻿  main.cpp
-c:\users\erike\desktop\v10\bas\main.cpp(297): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\erike\desktop\v10\bas\main.cpp(448): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erike\desktop\v10\bas\main.cpp(457): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\erike\desktop\v10\bas\main.cpp(481): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Demo.vcxproj -> C:\Users\erike\Desktop\V10\Bas\Debug\Demo.exe
+c:\users\erike\documents\github\3dproject\objectdata.h(218): warning C4018: '<': signed/unsigned mismatch
+c:\users\erike\documents\github\3dproject\objectdata.h(222): warning C4018: '<': signed/unsigned mismatch
+c:\users\erike\documents\github\3dproject\main.cpp(304): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\erike\documents\github\3dproject\main.cpp(457): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erike\documents\github\3dproject\main.cpp(466): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\erike\documents\github\3dproject\main.cpp(494): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Demo.vcxproj -> C:\Users\erike\Documents\GitHub\3dProject\Debug\Demo.exe

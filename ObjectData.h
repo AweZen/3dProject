@@ -29,7 +29,7 @@
 
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 enum ObjectType {
-	Quad, Cube, Plane
+	Quad, Cube, Plane,Sphere
 };
 
 struct Vertex
@@ -66,16 +66,17 @@ private:
 	GLsizeiptr indexBufferSize()const {
 		return (nrOfI * sizeof(unsigned int));
 	}
+	glm::vec3 calcNormal(glm::vec3 one, glm::vec3 two, glm::vec3 three);
 };
 
-ObjectData::ObjectData(ObjectType Objtype ,float size, glm::mat4 posInWorld)
+ObjectData::ObjectData(ObjectType Objtype, float size, glm::mat4 posInWorld)
 {
 	modelMatrix = posInWorld;
 	type = Objtype;
 	switch (type)
 	{
 	case Quad:
-		{
+	{
 		std::cout << "make quad: " << type << std::endl;
 
 		Vertex vertexData[] =
@@ -95,9 +96,11 @@ ObjectData::ObjectData(ObjectType Objtype ,float size, glm::mat4 posInWorld)
 		indices = new unsigned int[nrOfI];
 		memcpy(indices, indexData, sizeof(indexData));
 		break;
-		}
+	}
 	case Cube:
 	{
+		glm::vec3 test = cross(glm::vec3( size / 2, -size / 2, -size / 2) - glm::vec3(size / 2,  size / 2, -size / 2), glm::vec3( size / 2, -size / 2, -size / 2) - glm::vec3(-size / 2,  size / 2, -size / 2));
+		std::cout << test.x << " " << test.y << " " << test.z << std::endl;
 		Vertex vertexData[] =
 		{
 			//FRONT
@@ -121,15 +124,15 @@ ObjectData::ObjectData(ObjectType Objtype ,float size, glm::mat4 posInWorld)
 			 { { size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { 0, -1, 0 } },
 			 { { size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { 0, -1, 0 } },
 			 //RIGHT
-			 { { size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { -1, 0, 0 } },
-			 { { size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, { -1, 0, 0 } },
-			 { { size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { -1, 0, 0 } },
-			 { { size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { -1, 0, 0 } },
+			 { { size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { 1, 0, 0 } },
+			 { { size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, { 1, 0, 0 } },
+			 { { size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { 1, 0, 0 } },
+			 { { size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { 1, 0, 0 } },
 			 //LEFT                                                                  
-			 { {-size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { 1, 0, 0 } },
-			 { {-size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, { 1, 0, 0 } },
-			 { {-size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { 1, 0, 0 } },
-			 { {-size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { 1, 0, 0 } }
+			 { {-size / 2,  -size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 1 }, { -1, 0, 0 } },
+			 { {-size / 2,   size / 2, -size / 2 }, {glm::vec3(1,1,1)}, { 0, 0 }, {	-1, 0, 0 } },
+			 { {-size / 2,   size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 0 }, { -1, 0, 0 } },
+			 { {-size / 2,  -size / 2,  size / 2 }, {glm::vec3(1,1,1)}, { 1, 1 }, { -1, 0, 0 } }
 
 		};
 
@@ -168,11 +171,68 @@ ObjectData::ObjectData(ObjectType Objtype ,float size, glm::mat4 posInWorld)
 		memcpy(indices, indexData, sizeof(indexData));
 		break;
 	}
+	case Sphere:
+	{
+		int i, j;
+		std::vector<Vertex> verticesVector;
+		std::vector<GLuint> indicesVector;
+		int indicator = 0;
+		for (i = 0; i <= size; i++)
+		{
+			double lat0 = glm::pi<double>() * (-0.5 + (double)(i - 1) / size);
+			double z0 = sin(lat0);
+			double zr0 = cos(lat0);
+
+			double lat1 = glm::pi<double>() * (-0.5 + (double)i / size);
+			double z1 = sin(lat1);
+			double zr1 = cos(lat1);
+
+			for (j = 0; j <= size; j++)
+			{
+				double lng = 2 * glm::pi<double>() * (double)(j - 1) / size;
+				double x = cos(lng);
+				double y = sin(lng);
+
+				verticesVector.push_back(
+					{ {x * zr0, y * zr0, z0},
+					{ glm::vec3(1,1,1) },
+					{ 1,1 },
+					{ 0,1,0 } });
+				indicesVector.push_back(indicator);
+				indicator++;
+
+				verticesVector.push_back({ {x * zr1, y * zr1, z1},
+					{ glm::vec3(1,1,1) },
+					{ 1,1 },
+					{ 0,1,0 } });
+				indicesVector.push_back(indicator);
+				indicator++;
+			}
+			indicesVector.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+		}
+
+		nrOfV = verticesVector.size();
+		nrOfI = indicesVector.size();
+		vertices = new Vertex[nrOfV];
+		indices = new unsigned int[nrOfI];
+		for (int i = 0; i < nrOfV; i++) {
+			vertices[i] = verticesVector.back();
+			verticesVector.pop_back();
+		}
+		for (int i = 0; i < nrOfI; i++) {
+			indices[i] = indicesVector.back();
+			indicesVector.pop_back();
+		}
+		break;
+
+	}
 	}
 }
 
 ObjectData::~ObjectData()
 {
+
+
 }
 
 void ObjectData::setTexture(const char * fileName)
@@ -210,33 +270,37 @@ void ObjectData::setTexture(const char * fileName)
 void ObjectData::draw(GLuint ShaderProgram, float delta, float rotateAmount)
 {
 	glBindVertexArray(VA);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
 	if (rotateAmount > 0) {
 		rotation = rotateAmount * delta * 2;
 		modelMatrix = glm::rotate(modelMatrix, rotation, glm::vec3(0, 1, 0));
-	/*	switch (type)
-		{
-		case Quad:
-			vertices[3].normal = vertices[2].normal = vertices[1].normal = vertices[0].normal = cross(vertices[0].postion - vertices[1].postion, vertices[2].postion - vertices[1].postion);
-			init();
-			break;
-		case Cube:
-			for (int i = 0; i > 6; i++) {
-				vertices[3+i*4].normal = vertices[2 + i * 4].normal = vertices[1 + i * 4].normal = vertices[0 + i * 4].normal = cross(vertices[0 + i * 4].postion - vertices[1 + i * 4].postion, vertices[2 + i * 4].postion - vertices[1 + i * 4].postion);
+	
+		if (type == Cube) { 
+			for (int i = 0; i < 6; i++) {
+				glm::vec3 normal = calcNormal(glm::mat3(modelMatrix) * vertices[4*i + 1].postion, glm::mat3(modelMatrix)*vertices[4 * i].postion, glm::mat3(modelMatrix) * vertices[4 * i + 2].postion);
+				for (int j = 0; j < 4; j++) {
+					vertices[4 * i + j].normal = normal;
+				}
 			}
-			std::cout << vertices[4].normal.x << "   " << vertices[4].normal.y << "   " << vertices[4].normal.z << std::endl;
+
 			init();
-			break;
-		case Plane:
-			break;
-		default:
-			break;
-		}*/
+		}
 		
 	}
 	//glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 	glUniformMatrix4fv(glGetUniformLocation(ShaderProgram, "world") , 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	if (type == Sphere) {
+		glBindVertexArray(VA);
+		glEnable(GL_PRIMITIVE_RESTART);
+		glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VB);
+		glDrawElements(GL_QUADS, nrOfI, GL_UNSIGNED_INT, (void*)0);
 
-	glDrawElements(GL_TRIANGLES, nrOfI, GL_UNSIGNED_INT, (void*)0);
+	}
+	else {
+		glDrawElements(GL_TRIANGLES, nrOfI, GL_UNSIGNED_INT, (void*)0);
+	}
 	glBindVertexArray(0);
 }
 
@@ -267,5 +331,10 @@ void ObjectData::init()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 6));
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(float) * 8));
 
+}
+
+inline glm::vec3 ObjectData::calcNormal(glm::vec3 one, glm::vec3 two, glm::vec3 three)
+{
+	return cross(one - two, one - three);
 }
 

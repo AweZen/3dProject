@@ -66,8 +66,10 @@ float verticalAngle   = 0.0f;
 float gUniformColour[3]{ 1,1,1 };
 bool show_demo_window	 = true;
 bool show_another_window = false;
+bool lightPos			 = false;
 bool EnableMouse		 = true;
 bool jump				 = false;
+
 
 struct matrix {
 	glm::mat4 Projection;
@@ -83,6 +85,8 @@ glm::vec3 paralell  = glm::vec3(sin(horizontalAngle - 3.14f / 2.0f),0,cos(horizo
 
 ObjectData *quad;
 ObjectData *plane;
+ObjectData *sphere;
+
 //Quad * testQ;
 //Cube * testC;
 //Plane2 * testP;
@@ -158,6 +162,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 			up);					// Head is up (set to 0,-1,0 to look upside-down)
 
 		GLuint MatrixIDPos  = glGetUniformLocation(ShaderProgram, "pos");
+
 		GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
 		glUniform3fv(MatrixIDPos,  1,  glm::value_ptr(position));
 		glUniformMatrix4fv(MatrixIDView, 1, GL_FALSE, glm::value_ptr(pvw.View));
@@ -205,7 +210,7 @@ void createMatrix() {
 	glUniformMatrix4fv(MatrixIDWorld, 1, GL_FALSE, glm::value_ptr(pvw.World));
 	glUniformMatrix4fv(MatrixIDProj,  1, GL_FALSE, glm::value_ptr(pvw.Projection));
 	glUniform4fv(ambientLight, 1, value_ptr(glm::vec4(0.05f, 0.05f, 0.05f, 1.0f)));
-	glUniform3fv(lightPosition, 1, value_ptr(glm::vec3(2, 2, 2)));
+	glUniform3fv(lightPosition, 1, value_ptr(glm::vec3(2, 5, 10)));
 	glUniform3fv(lightColor,    1, value_ptr(glm::vec3(1, 1, 1)));
 	glUniform3fv(offset,        1, value_ptr(glm::vec3(0, 0, 2)));
 
@@ -271,9 +276,11 @@ void CreateObject()
 	quad->init();
 	quad->setTexture("res/doge.jpg");
 
-	plane = new ObjectData(Plane, 20, pvw.World);
+	plane = new ObjectData(Plane, 2, pvw.World);
 	plane->init();
 	plane->setTexture("res/image2.jpg");
+
+
 }
 
 int SetupGlfw()
@@ -361,6 +368,8 @@ void Render()
 		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Checkbox("Secret porn folder", &show_demo_window);
 		ImGui::Checkbox("Dont look?", &show_another_window);
+		ImGui::Checkbox("Want light to follow you?", &lightPos);
+
 		ImGui::SliderFloat("Warning, Computer might explode", &gIncrement, 0.0f, 1.0f);
 		ImGui::SliderFloat("Warning, Computer might explode 2", &gIncrement2, 0.0f, 1.0f);
 
@@ -466,6 +475,10 @@ void Keys() {
 	glUniform3fv(MatrixIDpos, 1, value_ptr(position));
 	GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
 	glUniformMatrix4fv(MatrixIDView, 1, GL_FALSE, glm::value_ptr(pvw.View));
+	if (lightPos) {
+		GLuint lightPosition = glGetUniformLocation(ShaderProgram, "lightPosition");
+		glUniform3fv(lightPosition, 1, value_ptr(position));
+	}
 }
 
 int main() {

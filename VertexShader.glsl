@@ -20,11 +20,10 @@ void main()
 {
 	mat4 mvp = proj * view * world;
 	mat3 normalMatrix = mat3(world);
-	normalMatrix = inverse(normalMatrix);
-	normalMatrix = transpose(normalMatrix);
+	normalMatrix = transpose(inverse(normalMatrix));
 	gl_Position   = mvp * vec4(position , 1);
 	_out.position = vec3(world * vec4(position, 1.0));
 	_out.color    = color;
     _out.tex      = tex;
-	_out.normal   = normalize(normal * normalMatrix);
+	_out.normal   = normalize(normal);
 } 
