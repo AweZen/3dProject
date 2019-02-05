@@ -62,7 +62,10 @@
     <None Include="LightPass.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="LightPass.frag">
+    <None Include="Dir_LightPass.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="point_light_pass.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

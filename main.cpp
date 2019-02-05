@@ -69,7 +69,8 @@ bool show_another_window = false;
 bool lightPos			 = false;
 bool EnableMouse		 = true;
 bool jump				 = false;
-
+bool ChangeSpawn = false;
+bool CurrentSpawn = true;
 
 struct matrix {
 	glm::mat4 Projection;
@@ -83,7 +84,7 @@ glm::vec3 direction = glm::vec3(0, 1, 0);
 glm::vec3 up        = glm::vec3(0, 1, 0);
 glm::vec3 paralell  = glm::vec3(sin(horizontalAngle - 3.14f / 2.0f),0,cos(horizontalAngle - 3.14f / 2.0f));
 
-ObjectData *quad;
+ObjectData *quad,*quad2;
 ObjectData *plane;
 ObjectData *sphere;
 
@@ -195,7 +196,7 @@ void createMatrix() {
 	glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	pvw.World = scaleMatrix;
 
-	pvw.Projection = glm::perspective(3.14f * 0.45f, (float)WIDTH / (float)HEIGHT, 0.1f, 500.0f);
+	pvw.Projection = glm::perspective(3.14f * 0.45f, (float)WIDTH / (float)HEIGHT, 0.1f, 200.0f);
 	cursor_position_callback(window, WIDTH / 2, HEIGHT / 2);
 	EnableMouse = false;
 
@@ -275,7 +276,9 @@ void CreateObject()
 	quad = new ObjectData(Cube, 200, pvw.World);
 	quad->init();
 	quad->setTexture("res/Sky.jpg");
-
+	quad2 = new ObjectData(Cube, 10, pvw.World);
+	quad2->init();
+	quad2->setTexture("res/doge.jpg");
 	plane = new ObjectData(Plane, 200, pvw.World);
 	plane->init();
 	plane->setTexture("res/image2.jpg");
@@ -369,6 +372,7 @@ void Render()
 		ImGui::Checkbox("Secret porn folder", &show_demo_window);
 		ImGui::Checkbox("Dont look?", &show_another_window);
 		ImGui::Checkbox("Want light to follow you?", &lightPos);
+		ImGui::Checkbox("Swap spawn?", &ChangeSpawn);
 
 		ImGui::SliderFloat("Warning, Computer might explode", &gIncrement, 0.0f, 1.0f);
 		ImGui::SliderFloat("Warning, Computer might explode 2", &gIncrement2, 0.0f, 1.0f);
@@ -410,6 +414,8 @@ void Render()
 	/*testC->render();*/
 	//testP->render();
 	quad->draw(ShaderProgram,deltaTime, gIncrement);
+	quad2->draw(ShaderProgram, deltaTime, gIncrement);
+
 	plane->draw(ShaderProgram, deltaTime, gIncrement2);
 
 
@@ -470,14 +476,32 @@ void Keys() {
 	if (pressed) {
 		pvw.View = glm::lookAt(position, position + direction, up);
 	}
-	GLuint MatrixIDpos = glGetUniformLocation(ShaderProgram, "pos");
-	glUniform3fv(MatrixIDpos, 1, value_ptr(position));
-	GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
-	glUniformMatrix4fv(MatrixIDView, 1, GL_FALSE, glm::value_ptr(pvw.View));
+
+
 	if (lightPos) {
 		GLuint lightPosition = glGetUniformLocation(ShaderProgram, "lightPosition");
 		glUniform3fv(lightPosition, 1, value_ptr(position));
 	}
+	if (ChangeSpawn) {
+		if (CurrentSpawn) {
+			position = glm::vec3(0, -200, 10);
+			pvw.View = glm::lookAt(position, position + direction, up);
+
+			CurrentSpawn = false;
+		}
+		else {
+			position = glm::vec3(0, 0, 10);
+			pvw.View = glm::lookAt(position, position + direction, up);
+
+			CurrentSpawn = true;
+
+		}
+		ChangeSpawn = false;
+	}
+	GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
+	glUniformMatrix4fv(MatrixIDView, 1, GL_FALSE, glm::value_ptr(pvw.View));
+	GLuint MatrixIDpos = glGetUniformLocation(ShaderProgram, "pos");
+	glUniform3fv(MatrixIDpos, 1, value_ptr(position));
 }
 
 int main() {

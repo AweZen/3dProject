@@ -139,8 +139,9 @@
     </None>
     <None Include="GeoPass.frag" />
     <None Include="GeoPass.vert" />
-    <None Include="LightPass.frag" />
+    <None Include="Dir_LightPass.frag" />
     <None Include="LightPass.vert" />
+    <None Include="point_light_pass.frag" />
     <None Include="VertexShader.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </None>
