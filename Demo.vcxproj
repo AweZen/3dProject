@@ -137,10 +137,10 @@
     <None Include="FragmentShader.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </None>
-    <None Include="GeoPass.frag" />
-    <None Include="GeoPass.vert" />
-    <None Include="LightPass.frag" />
-    <None Include="LightPass.vert" />
+    <None Include="GeoPass-fs.glsl" />
+    <None Include="GeoPass-vs.glsl" />
+    <None Include="LightPass-fs.glsl" />
+    <None Include="LightPass-vs.glsl" />
     <None Include="VertexShader.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </None>
@@ -157,9 +157,7 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="ObjectData.h" />
-    <ClInclude Include="ObjectHandeler.h" />
-    <ClInclude Include="Plane.h" />
-    <ClInclude Include="Render.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

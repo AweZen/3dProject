@@ -53,16 +53,16 @@
     <None Include="VertexShader.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="GeoPass.vert">
+    <None Include="LightPass-fs.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="GeoPass.frag">
+    <None Include="LightPass-vs.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="LightPass.vert">
+    <None Include="GeoPass-fs.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="LightPass.frag">
+    <None Include="GeoPass-vs.glsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -94,25 +94,19 @@
     <ClInclude Include="imgui\imgui_impl_glfw.h">
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectHandeler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ObjectData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Gbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -28,6 +28,7 @@
 #pragma comment(lib, "glew32.lib")
 
 #define BUFFER_OFFSET(i) ((char *)nullptr + (i))
+
 enum ObjectType {
 	Quad, Cube, Plane,Sphere
 };
@@ -42,31 +43,38 @@ struct Vertex
 
 class ObjectData
 {
-public:
-	ObjectData(ObjectType type, float size, glm::mat4 posInWorld);
-	~ObjectData();
-	void setTexture(const char* fileName);
-	void draw(GLuint ShaderProgram, float delta, float rotateAmount);
-	void init();
-	GLuint VB, IB, VA;
 private:
 	ObjectType type;
-	Vertex * vertices;
-	GLuint nrOfV;
 	float rotation = 0.f;
-	unsigned int * indices;
-	unsigned char *image;
-	GLuint nrOfI;
+	glm::mat4 modelMatrix;
+
 	GLuint texture;
 	int width, height;
-	glm::mat4 modelMatrix;
+	unsigned char *image;
+
+	Vertex * vertices;
+	GLuint nrOfV;
+	unsigned int * indices;
+	GLuint nrOfI;
 	GLsizeiptr vertexBufferSize()const {
 		return (nrOfV * sizeof(Vertex));
 	}
 	GLsizeiptr indexBufferSize()const {
 		return (nrOfI * sizeof(unsigned int));
 	}
+
 	glm::vec3 calcNormal(glm::vec3 one, glm::vec3 two, glm::vec3 three);
+
+public:
+	GLuint VB, IB, VA;
+
+	ObjectData(ObjectType type, float size, glm::mat4 posInWorld);
+	~ObjectData();
+
+	void setTexture(const char* fileName);
+	void draw(GLuint ShaderProgram, float delta, float rotateAmount);
+	void init();
+
 };
 
 ObjectData::ObjectData(ObjectType Objtype, float size, glm::mat4 posInWorld)
@@ -77,7 +85,6 @@ ObjectData::ObjectData(ObjectType Objtype, float size, glm::mat4 posInWorld)
 	{
 	case Quad:
 	{
-		std::cout << "make quad: " << type << std::endl;
 
 		Vertex vertexData[] =
 		{
@@ -99,8 +106,8 @@ ObjectData::ObjectData(ObjectType Objtype, float size, glm::mat4 posInWorld)
 	}
 	case Cube:
 	{
-		glm::vec3 test = cross(glm::vec3( size / 2, -size / 2, -size / 2) - glm::vec3(size / 2,  size / 2, -size / 2), glm::vec3( size / 2, -size / 2, -size / 2) - glm::vec3(-size / 2,  size / 2, -size / 2));
-		std::cout << test.x << " " << test.y << " " << test.z << std::endl;
+		//glm::vec3 test = cross(glm::vec3( size / 2, -size / 2, -size / 2) - glm::vec3(size / 2,  size / 2, -size / 2), glm::vec3( size / 2, -size / 2, -size / 2) - glm::vec3(-size / 2,  size / 2, -size / 2));
+	
 		Vertex vertexData[] =
 		{
 			//FRONT
@@ -232,39 +239,31 @@ ObjectData::ObjectData(ObjectType Objtype, float size, glm::mat4 posInWorld)
 ObjectData::~ObjectData()
 {
 
-
 }
 
 void ObjectData::setTexture(const char * fileName)
 {
-
 	// Bind texture
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	// Set our texture parameters	std::cout << "tex: " << std::endl;
-
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
 	// Set texture filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Load, create texture and generate mipmaps
 	image = SOIL_load_image(fileName, &width, &height, 0, SOIL_LOAD_RGBA);
-
-
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
 	glGenerateMipmap(GL_TEXTURE_2D);
-
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
-
 	glUniform1i(glGetUniformLocation(GL_FRAGMENT_SHADER, "myTex"), 0);
-
 }
 
 void ObjectData::draw(GLuint ShaderProgram, float delta, float rotateAmount)
@@ -277,6 +276,7 @@ void ObjectData::draw(GLuint ShaderProgram, float delta, float rotateAmount)
 		modelMatrix = glm::rotate(modelMatrix, rotation, glm::vec3(0, 1, 0));
 	
 		if (type == Cube) { 
+			std::cout << "DIE" << std::endl;	
 			for (int i = 0; i < 6; i++) {
 				glm::vec3 normal = calcNormal(glm::mat3(modelMatrix) * vertices[4*i + 1].postion, glm::mat3(modelMatrix)*vertices[4 * i].postion, glm::mat3(modelMatrix) * vertices[4 * i + 2].postion);
 				for (int j = 0; j < 4; j++) {
@@ -288,8 +288,10 @@ void ObjectData::draw(GLuint ShaderProgram, float delta, float rotateAmount)
 		}
 		
 	}
-	//glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-	glUniformMatrix4fv(glGetUniformLocation(ShaderProgram, "world") , 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	glUniformMatrix4fv(glGetUniformLocation(ShaderProgram, "world"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+
 	if (type == Sphere) {
 		glBindVertexArray(VA);
 		glEnable(GL_PRIMITIVE_RESTART);
@@ -333,7 +335,7 @@ void ObjectData::init()
 
 }
 
-inline glm::vec3 ObjectData::calcNormal(glm::vec3 one, glm::vec3 two, glm::vec3 three)
+glm::vec3 ObjectData::calcNormal(glm::vec3 one, glm::vec3 two, glm::vec3 three)
 {
 	return cross(one - two, one - three);
 }

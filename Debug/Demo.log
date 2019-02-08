@@ -1,1 +1,9 @@
-﻿  Demo.vcxproj -> C:\Users\Admin\Downloads\3dProject-master\Debug\Demo.exe
+﻿  main.cpp
+c:\users\admin\downloads\3dproject-deferred\objectdata.h(225): warning C4018: '<': signed/unsigned mismatch
+c:\users\admin\downloads\3dproject-deferred\objectdata.h(229): warning C4018: '<': signed/unsigned mismatch
+c:\users\admin\downloads\3dproject-deferred\window.h(112): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\admin\downloads\3dproject-deferred\main.cpp(208): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\admin\downloads\3dproject-deferred\main.cpp(356): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\admin\downloads\3dproject-deferred\main.cpp(365): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\admin\downloads\3dproject-deferred\main.cpp(395): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Demo.vcxproj -> C:\Users\Admin\Downloads\3dProject-Deferred\Debug\Demo.exe

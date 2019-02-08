@@ -30,11 +30,10 @@
 #include "include/SOIL2/SOIL2.h"
 
 //CLASS INCLUDES
-//#include "Quad.h"
-//#include "Cube.h"
-//#include "Plane.h"
-//#include "Plane2.h"
 #include "ObjectData.h"
+#include "Gbuffer.h"
+#include "Shader.h"
+#include "Window.h"
 
 //PRAGMA, MORE LIKE PRAG MA DICK
 #pragma comment(lib, "opengl32.lib")
@@ -87,56 +86,14 @@ ObjectData *quad;
 ObjectData *plane;
 ObjectData *sphere;
 
-//Quad * testQ;
-//Cube * testC;
-//Plane2 * testP;
-//Plane * testP;
+GBuffer Gbuffer;
+Shader *shader;
+Window *testW;
 
-void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
-{
-	// ignore non-significant error/warning codes
-	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
-
-	std::cout << "---------------" << std::endl;
-	std::cout << "Debug message (" << id << "): " << message << std::endl;
-
-	switch (source)
-	{
-	case GL_DEBUG_SOURCE_API:             std::cout << "Source: API"; break;
-	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::cout << "Source: Window System"; break;
-	case GL_DEBUG_SOURCE_SHADER_COMPILER: std::cout << "Source: Shader Compiler"; break;
-	case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cout << "Source: Third Party"; break;
-	case GL_DEBUG_SOURCE_APPLICATION:     std::cout << "Source: Application"; break;
-	case GL_DEBUG_SOURCE_OTHER:           std::cout << "Source: Other"; break;
-	} std::cout << std::endl;
-
-	switch (type)
-	{
-	case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
-	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
-	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break;
-	case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
-	case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
-	case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
-	case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
-	case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
-	case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
-	} std::cout << std::endl;
-
-	switch (severity)
-	{
-	case GL_DEBUG_SEVERITY_HIGH:         std::cout << "Severity: high"; break;
-	case GL_DEBUG_SEVERITY_MEDIUM:       std::cout << "Severity: medium"; break;
-	case GL_DEBUG_SEVERITY_LOW:          std::cout << "Severity: low"; break;
-	case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
-	} std::cout << std::endl;
-	std::cout << std::endl;
-}
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (EnableMouse) {
-		glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
 		glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
 
 		horizontalAngle += mouseSpeed * deltaTime * float(WIDTH  / 2 - xpos);
@@ -161,9 +118,8 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 			position + direction,	// and looks at the origin
 			up);					// Head is up (set to 0,-1,0 to look upside-down)
 
-		GLuint MatrixIDPos  = glGetUniformLocation(ShaderProgram, "pos");
-
-		GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
+		GLuint MatrixIDPos  = glGetUniformLocation(shader->getShader(), "pos");
+		GLuint MatrixIDView = glGetUniformLocation(shader->getShader(), "view");
 		glUniform3fv(MatrixIDPos,  1,  glm::value_ptr(position));
 		glUniformMatrix4fv(MatrixIDView, 1, GL_FALSE, glm::value_ptr(pvw.View));
 	}
@@ -187,10 +143,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-void rotateMatrix(float time) {
-
-}
-
 void createMatrix() {
 	glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	pvw.World = scaleMatrix;
@@ -199,13 +151,13 @@ void createMatrix() {
 	cursor_position_callback(window, WIDTH / 2, HEIGHT / 2);
 	EnableMouse = false;
 
-	GLuint MatrixIDWorld = glGetUniformLocation(ShaderProgram, "world");
-	GLuint MatrixIDProj  = glGetUniformLocation(ShaderProgram, "proj");
-	GLuint lightPosition = glGetUniformLocation(ShaderProgram, "lightPosition");
-	GLuint lightColor    = glGetUniformLocation(ShaderProgram, "lightColor");
-	GLuint ambientLight  = glGetUniformLocation(ShaderProgram, "ambientLight");
-	GLuint offset = glGetUniformLocation(ShaderProgram, "offset");
-	GLuint rayDir = glGetUniformLocation(ShaderProgram, "rayDir");
+	GLuint MatrixIDWorld = glGetUniformLocation(shader->getShader(), "world");
+	GLuint MatrixIDProj  = glGetUniformLocation(shader->getShader(), "proj");
+	GLuint lightPosition = glGetUniformLocation(shader->getShader(), "lightPosition");
+	GLuint lightColor    = glGetUniformLocation(shader->getShader(), "lightColor");
+	GLuint ambientLight  = glGetUniformLocation(shader->getShader(), "ambientLight");
+	GLuint offset = glGetUniformLocation(shader->getShader(), "offset");
+	GLuint rayDir = glGetUniformLocation(shader->getShader(), "rayDir");
 
 	glUniformMatrix4fv(MatrixIDWorld, 1, GL_FALSE, glm::value_ptr(pvw.World));
 	glUniformMatrix4fv(MatrixIDProj,  1, GL_FALSE, glm::value_ptr(pvw.Projection));
@@ -216,70 +168,30 @@ void createMatrix() {
 
 }
 
-GLuint loadShader(GLenum type, const GLchar * fileName)
-{
-	GLuint shader = glCreateShader(type);
-
-	ifstream shaderFile(fileName);
-	string shaderText((istreambuf_iterator<char>(shaderFile)), istreambuf_iterator<char>());
-	shaderFile.close();
-
-	const char* shaderTextPtr = shaderText.c_str();
-	glShaderSource(shader, 1, &shaderTextPtr, nullptr);
-	glCompileShader(shader);
-
-	return shader;
-}
-
-void CreateShaders()
-{
-	char buff[1024];
-	memset(buff, 0, 1024);
-	GLint compileResult = 0;
-
-	GLuint vs = loadShader(GL_VERTEX_SHADER, "VertexShader.glsl");
-	GLuint fs = loadShader(GL_FRAGMENT_SHADER, "FragmentShader.glsl");
-
-	ShaderProgram = glCreateProgram();
-	glAttachShader(ShaderProgram, fs);
-	glAttachShader(ShaderProgram, vs);
-	glLinkProgram(ShaderProgram);
-	glUseProgram(ShaderProgram);
-
-	glDetachShader(ShaderProgram, vs);
-	glDetachShader(ShaderProgram, fs);
-
-	glDeleteShader(vs);
-	glDeleteShader(fs);
-}
-
 void CreateObject()
 {
-	//Create Quad
-	//testQ = new Quad(50, pvw.World);
-	//testQ->initVAO();
-	//testQ->setTexture("res/image2.jpg");
-
-	//testP = new Plane2(10, pvw.World);
-	//testP->initVAO();
-
-	////Create Cube
-	//testC = new Cube(4, pvw.World);
-	//testC->initVAO();
-	//testC->setTexture("res/doge.jpg");
-
-	//Create Plane
-	//testP = new Plane(10, pvw.World);
-	//testP->initVAO();
-
-	quad = new ObjectData(Cube, 200, pvw.World);
+	quad = new ObjectData(Cube, 2, pvw.World);
 	quad->init();
-	quad->setTexture("res/Sky.jpg");
+	quad->setTexture("res/doge.jpg");
 
-	plane = new ObjectData(Plane, 200, pvw.World);
+	plane = new ObjectData(Plane, 20, pvw.World);
 	plane->init();
 	plane->setTexture("res/image2.jpg");
+}
 
+void createShader()
+{
+	shader = new Shader("VertexShader.glsl", "FragmentShader.glsl");
+	shader->useShader();
+}
+
+void createWindow()
+{
+	testW = new Window(WIDTH, HEIGHT, "TestWindow");
+
+	createShader();
+	createMatrix();
+	CreateObject();
 
 }
 
@@ -293,14 +205,6 @@ int SetupGlfw()
 		return -1;
 	}
 
-	GLint glMajor, glMinor;
-	glGetIntegerv(GL_MAJOR_VERSION, &glMajor);
-	glGetIntegerv(GL_MAJOR_VERSION, &glMinor);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	window = glfwCreateWindow(WIDTH, HEIGHT, "3D Project by Erik and Vendela", NULL, NULL);
 
 
@@ -310,14 +214,11 @@ int SetupGlfw()
 		glfwTerminate();
 		return -1;
 	}
-
+	
 	glfwMakeContextCurrent(window);
 	glewExperimental = true; // Needed for core profile
 	if (glewInit() != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		getchar();
-		glfwTerminate();
-		return -1;
+		
 	}
 
 	// register debug functions before talking to OpenGL
@@ -326,18 +227,19 @@ int SetupGlfw()
 	glDebugMessageCallback(glDebugOutput, nullptr);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 
-	CreateShaders();
-	createMatrix ();
-	CreateObject();
-
 	
+
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDepthMask(GL_TRUE);
+	//glDepthMask(GL_TRUE);
 	glClearDepth(1.0f);
-	glDepthFunc(GL_LESS);
+	//glDepthFunc(GL_LESS);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
+	shader = new Shader("VertexShader.glsl", "FragmentShader.glsl");
+	shader->useShader();
+	createMatrix();
+	CreateObject();
 	return 1;
 }
 
@@ -399,21 +301,19 @@ void Render()
 	glViewport(0, 0, display_w, display_h);
 	glClearColor(gClearColour.x, gClearColour.y, gClearColour.z, gClearColour.w);
 
-	rotateMatrix(gFloat);
-	glUseProgram(ShaderProgram);
+	shader->useShader();
 	glUniform3fv(gUniformColourLoc, 1, &gUniformColour[0]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+	
+	//Render objects
+	quad->draw(shader->getShader(), deltaTime, gIncrement);
+	plane->draw(shader->getShader(), deltaTime, gIncrement2);
 
-	//testQ->render();
-	/*testC->render();*/
-	//testP->render();
-	quad->draw(ShaderProgram,deltaTime, gIncrement);
-	plane->draw(ShaderProgram, deltaTime, gIncrement2);
-
-
+	//Render Imgui
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	//Uppdatera till window
 	glfwMakeContextCurrent(window);
 	glfwSwapBuffers(window);
 }
@@ -427,7 +327,7 @@ void CloseProgram() {
 	glDeleteBuffers(1, &VB);
 	glDeleteBuffers(1, &IB);
 	glDeleteVertexArrays(1, &VA);
-	glDeleteProgram(ShaderProgram);
+	shader->~Shader();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -435,23 +335,23 @@ void CloseProgram() {
 
 void Keys() {
 	bool pressed = false;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+	if (glfwGetKey(testW->_window, GLFW_KEY_W) == GLFW_PRESS) {
 		position += direction * deltaTime * speed;
 		pressed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+	if (glfwGetKey(testW->_window, GLFW_KEY_S) == GLFW_PRESS) {
 		position -= direction * deltaTime * speed;
 		pressed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+	if (glfwGetKey(testW->_window, GLFW_KEY_D) == GLFW_PRESS) {
 		position += paralell * deltaTime * speed;
 		pressed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+	if (glfwGetKey(testW->_window, GLFW_KEY_A) == GLFW_PRESS) {
 		position -= paralell * deltaTime * speed;
 		pressed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_REPEAT) {
+	if (glfwGetKey(testW->_window, GLFW_KEY_SPACE) == GLFW_REPEAT) {
 		if (!jump) {
 			timeSinceJump = glfwGetTime();
 			jump = true;
@@ -470,34 +370,35 @@ void Keys() {
 	if (pressed) {
 		pvw.View = glm::lookAt(position, position + direction, up);
 	}
-	GLuint MatrixIDpos = glGetUniformLocation(ShaderProgram, "pos");
+	GLuint MatrixIDpos = glGetUniformLocation(shader->getShader(), "pos");
 	glUniform3fv(MatrixIDpos, 1, value_ptr(position));
-	GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
+	GLuint MatrixIDView = glGetUniformLocation(shader->getShader(), "view");
 	glUniformMatrix4fv(MatrixIDView, 1, GL_FALSE, glm::value_ptr(pvw.View));
 	if (lightPos) {
-		GLuint lightPosition = glGetUniformLocation(ShaderProgram, "lightPosition");
+		GLuint lightPosition = glGetUniformLocation(shader->getShader(), "lightPosition");
 		glUniform3fv(lightPosition, 1, value_ptr(position));
 	}
 }
 
-int main() {
-	if (SetupGlfw() == 1) {
-		SetupImGui();
+int main()
+{
+	createWindow();
+	SetupImGui();
 
-		glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
-		glfwSetCursorPosCallback(window, cursor_position_callback);
-		glfwSetKeyCallback(window, key_callback);
-		while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0) {
-			double currentTime = glfwGetTime();
-			deltaTime = float(currentTime - lastTime);
-			lastTime = currentTime;
-			Keys();
-			Render();
-			glfwPollEvents();
+	glfwSetCursorPos(testW->_window, WIDTH / 2, HEIGHT / 2);
+	glfwSetCursorPosCallback(testW->_window, cursor_position_callback);
+	glfwSetKeyCallback(testW->_window, key_callback);
 
-		}
-		CloseProgram();
+	while (glfwGetKey(testW->_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(testW->_window) == 0) {
+		double currentTime = glfwGetTime();
+		deltaTime = float(currentTime - lastTime);
+		lastTime = currentTime;
+		Keys();
+		Render();
+		glfwPollEvents();
+
 	}
+	CloseProgram();
 	return 0;
 }
 

@@ -10,6 +10,7 @@ out Vertex_Out {
 	vec2 tex;
 	vec3 normal;
 } _out;
+
 uniform mat4 world;
 uniform mat4 view;
 uniform mat4 proj;
@@ -19,8 +20,8 @@ uniform mat4 proj;
 void main()
 {
 	mat4 mvp = proj * view * world;
-	mat3 normalMatrix = mat3(world);
-	normalMatrix = transpose(inverse(normalMatrix));
+//	mat3 normalMatrix = mat3(world);
+//	normalMatrix = transpose(inverse(normalMatrix));
 	gl_Position   = mvp * vec4(position , 1);
 	_out.position = vec3(world * vec4(position, 1.0));
 	_out.color    = color;
