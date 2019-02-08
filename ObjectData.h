@@ -43,12 +43,17 @@ struct Vertex
 class ObjectData
 {
 public:
-	ObjectData(ObjectType type, float size, glm::mat4 posInWorld);
+	ObjectData(ObjectType type, float size, glm::mat4 posInWorld,glm::vec3 pos);
 	~ObjectData();
+	//ObjectData(const ObjectData& other);
+	//ObjectData& operator=(const ObjectData& other);
 	void setTexture(const char* fileName);
 	void draw(GLuint ShaderProgram, float delta, float rotateAmount);
 	void init();
 	GLuint VB, IB, VA;
+	glm::vec3 position;
+	float _size;
+
 private:
 	ObjectType type;
 	Vertex * vertices;
@@ -69,15 +74,16 @@ private:
 	glm::vec3 calcNormal(glm::vec3 one, glm::vec3 two, glm::vec3 three);
 };
 
-ObjectData::ObjectData(ObjectType Objtype, float size, glm::mat4 posInWorld)
+ObjectData::ObjectData(ObjectType Objtype, float size, glm::mat4 posInWorld, glm::vec3 pos)
 {
-	modelMatrix = posInWorld;
+	position = pos;
+	modelMatrix = glm::translate(posInWorld,pos) ;
 	type = Objtype;
+	_size = size;
 	switch (type)
 	{
 	case Quad:
 	{
-		std::cout << "make quad: " << type << std::endl;
 
 		Vertex vertexData[] =
 		{
@@ -235,6 +241,32 @@ ObjectData::~ObjectData()
 
 }
 
+/*ObjectData::ObjectData(const ObjectData & other)
+{
+	this->height = other.height;
+	this->width = other.width;
+	this->modelMatrix = other.modelMatrix;
+	this->image = other.image;
+	this->indices = other.indices;
+	memcpy(this->vertices, other.vertices, sizeof(other.vertices));
+	memcpy(this->indices, other.indices, sizeof(other.indices));
+
+}
+*/
+/*ObjectData & ObjectData::operator=(const ObjectData & other)
+{
+	this->height = other.height;
+	this->width = other.width;
+	this->modelMatrix = other.modelMatrix;
+	this->image = other.image;
+	this->indices = other.indices;
+	memcpy(this->vertices, other.vertices, sizeof(other.vertices));
+	memcpy(this->indices, other.indices, sizeof(other.indices));
+	return *this;
+
+
+}
+*/
 void ObjectData::setTexture(const char * fileName)
 {
 
@@ -242,7 +274,7 @@ void ObjectData::setTexture(const char * fileName)
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	// Set our texture parameters	std::cout << "tex: " << std::endl;
+	// Set our texture parameters	std::<< "tex: " << std::endl;
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

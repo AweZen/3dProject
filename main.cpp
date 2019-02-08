@@ -35,7 +35,7 @@
 //#include "Plane.h"
 //#include "Plane2.h"
 #include "ObjectData.h"
-
+#include "QuadTree.h"
 //PRAGMA, MORE LIKE PRAG MA DICK
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -69,8 +69,7 @@ bool show_another_window = false;
 bool lightPos			 = false;
 bool EnableMouse		 = true;
 bool jump				 = false;
-bool ChangeSpawn = false;
-bool CurrentSpawn = true;
+
 
 struct matrix {
 	glm::mat4 Projection;
@@ -79,15 +78,15 @@ struct matrix {
 };
 matrix pvw;
 
-glm::vec3 position  = glm::vec3(0, 0, 10);
-glm::vec3 direction = glm::vec3(0, 1, 0);
+glm::vec3 position  = glm::vec3(0, 0, -10);
+glm::vec3 direction = glm::vec3(0, 0, 0);
 glm::vec3 up        = glm::vec3(0, 1, 0);
 glm::vec3 paralell  = glm::vec3(sin(horizontalAngle - 3.14f / 2.0f),0,cos(horizontalAngle - 3.14f / 2.0f));
 
-ObjectData *quad,*quad2;
+ObjectData *quad,*quad2,*quad3,*quad4;
 ObjectData *plane;
 ObjectData *sphere;
-
+QuadTree*test;
 //Quad * testQ;
 //Cube * testC;
 //Plane2 * testP;
@@ -188,10 +187,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-void rotateMatrix(float time) {
-
-}
-
 void createMatrix() {
 	glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	pvw.World = scaleMatrix;
@@ -222,7 +217,7 @@ GLuint loadShader(GLenum type, const GLchar * fileName)
 	GLuint shader = glCreateShader(type);
 
 	ifstream shaderFile(fileName);
-	string shaderText((istreambuf_iterator<char>(shaderFile)), istreambuf_iterator<char>());
+	std::string shaderText((istreambuf_iterator<char>(shaderFile)), istreambuf_iterator<char>());
 	shaderFile.close();
 
 	const char* shaderTextPtr = shaderText.c_str();
@@ -273,16 +268,33 @@ void CreateObject()
 	//testP = new Plane(10, pvw.World);
 	//testP->initVAO();
 
-	quad = new ObjectData(Cube, 200, pvw.World);
+	quad = new ObjectData(Cube, 5, pvw.World, glm::vec3(-10, 1.5, -10));
 	quad->init();
-	quad->setTexture("res/Sky.jpg");
-	quad2 = new ObjectData(Cube, 10, pvw.World);
+	quad->setTexture("res/Nacho.png");
+	quad2 = new ObjectData(Cube, 6, pvw.World, glm::vec3(10, 1.5, 10));
 	quad2->init();
-	quad2->setTexture("res/doge.jpg");
-	plane = new ObjectData(Plane, 200, pvw.World);
+	quad2->setTexture("res/Nacho2.png");
+	quad3 = new ObjectData(Cube, 7,pvw.World, glm::vec3(-10, 1.5, 10));
+	quad3->init();
+	quad3->setTexture("res/Nacho3.png");
+	quad4 = new ObjectData(Cube, 1, pvw.World, glm::vec3(0, 0, 0));
+	quad4->init();
+	quad4->setTexture("res/Nacho3.png");
+	plane = new ObjectData(Plane, 20, pvw.World, glm::vec3(1, 1, 1));
 	plane->init();
-	plane->setTexture("res/image2.jpg");
+	plane->setTexture("res/Nacho4.png");
 
+	test = new QuadTree(rectrangle(0, 0, 100, 100),1);
+	test->insert(*quad4);
+
+	test->insert(*quad);
+	test->insert(*quad2);
+
+	test->insert(*quad3);
+
+	test->insert(*plane);
+
+	cout << test->toTextSize();
 
 }
 
@@ -367,12 +379,11 @@ void Render()
 		static float f = 0.0f;
 		static int counter = 0;
 		ImGui::SetWindowSize(ImVec2(100, 200));
-		ImGui::Begin("Tryck på TAB för att aktivera mus");
+		ImGui::Begin("Press TAB to activate mouse");
 		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Checkbox("Secret porn folder", &show_demo_window);
 		ImGui::Checkbox("Dont look?", &show_another_window);
-		ImGui::Checkbox("Want light to follow you?", &lightPos);
-		ImGui::Checkbox("Swap spawn?", &ChangeSpawn);
+		ImGui::Checkbox("Want light to follow you", &lightPos);
 
 		ImGui::SliderFloat("Warning, Computer might explode", &gIncrement, 0.0f, 1.0f);
 		ImGui::SliderFloat("Warning, Computer might explode 2", &gIncrement2, 0.0f, 1.0f);
@@ -403,7 +414,6 @@ void Render()
 	glViewport(0, 0, display_w, display_h);
 	glClearColor(gClearColour.x, gClearColour.y, gClearColour.z, gClearColour.w);
 
-	rotateMatrix(gFloat);
 	glUseProgram(ShaderProgram);
 	glUniform3fv(gUniformColourLoc, 1, &gUniformColour[0]);
 
@@ -413,9 +423,11 @@ void Render()
 	//testQ->render();
 	/*testC->render();*/
 	//testP->render();
+
 	quad->draw(ShaderProgram,deltaTime, gIncrement);
 	quad2->draw(ShaderProgram, deltaTime, gIncrement);
-
+	quad3->draw(ShaderProgram, deltaTime, gIncrement);
+	quad4->draw(ShaderProgram, deltaTime, gIncrement);
 	plane->draw(ShaderProgram, deltaTime, gIncrement2);
 
 
@@ -482,22 +494,7 @@ void Keys() {
 		GLuint lightPosition = glGetUniformLocation(ShaderProgram, "lightPosition");
 		glUniform3fv(lightPosition, 1, value_ptr(position));
 	}
-	if (ChangeSpawn) {
-		if (CurrentSpawn) {
-			position = glm::vec3(0, -200, 10);
-			pvw.View = glm::lookAt(position, position + direction, up);
 
-			CurrentSpawn = false;
-		}
-		else {
-			position = glm::vec3(0, 0, 10);
-			pvw.View = glm::lookAt(position, position + direction, up);
-
-			CurrentSpawn = true;
-
-		}
-		ChangeSpawn = false;
-	}
 	GLuint MatrixIDView = glGetUniformLocation(ShaderProgram, "view");
 	glUniformMatrix4fv(MatrixIDView, 1, GL_FALSE, glm::value_ptr(pvw.View));
 	GLuint MatrixIDpos = glGetUniformLocation(ShaderProgram, "pos");

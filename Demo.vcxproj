@@ -147,7 +147,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Cube.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_glfw.h" />
@@ -160,11 +159,9 @@
     <ClInclude Include="ObjectData.h" />
     <ClInclude Include="ObjectHandeler.h" />
     <ClInclude Include="Plane.h" />
-    <ClInclude Include="Plane2.h" />
-    <ClInclude Include="Quad.h" />
+    <ClInclude Include="QuadTree.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="Triangle.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
