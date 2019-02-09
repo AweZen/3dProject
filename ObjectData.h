@@ -275,8 +275,7 @@ void ObjectData::draw(GLuint ShaderProgram, float delta, float rotateAmount)
 		rotation = rotateAmount * delta * 2;
 		modelMatrix = glm::rotate(modelMatrix, rotation, glm::vec3(0, 1, 0));
 	
-		if (type == Cube) { 
-			std::cout << "DIE" << std::endl;	
+		if (type == Cube) { 	
 			for (int i = 0; i < 6; i++) {
 				glm::vec3 normal = calcNormal(glm::mat3(modelMatrix) * vertices[4*i + 1].postion, glm::mat3(modelMatrix)*vertices[4 * i].postion, glm::mat3(modelMatrix) * vertices[4 * i + 2].postion);
 				for (int j = 0; j < 4; j++) {

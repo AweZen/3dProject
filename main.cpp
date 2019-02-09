@@ -43,7 +43,6 @@
 using namespace std;
 
 //GLOBALA VARIABLER, MER FRIHET TILL FOLKET
-GLFWwindow* window;
 GLuint ShaderProgram;
 GLuint VA, VB, IB;
 GLint gUniformColourLoc = -1;
@@ -148,7 +147,7 @@ void createMatrix() {
 	pvw.World = scaleMatrix;
 
 	pvw.Projection = glm::perspective(3.14f * 0.45f, (float)WIDTH / (float)HEIGHT, 0.1f, 500.0f);
-	cursor_position_callback(window, WIDTH / 2, HEIGHT / 2);
+	cursor_position_callback(testW->_window, WIDTH / 2, HEIGHT / 2);
 	EnableMouse = false;
 
 	GLuint MatrixIDWorld = glGetUniformLocation(shader->getShader(), "world");
@@ -197,49 +196,49 @@ void createWindow()
 
 int SetupGlfw()
 {
-	if (!glfwInit())
-	{
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		getchar();
+	//if (!glfwInit())
+	//{
+	//	fprintf(stderr, "Failed to initialize GLFW\n");
+	//	getchar();
 
-		return -1;
-	}
+	//	return -1;
+	//}
 
-	window = glfwCreateWindow(WIDTH, HEIGHT, "3D Project by Erik and Vendela", NULL, NULL);
+	//window = glfwCreateWindow(WIDTH, HEIGHT, "3D Project by Erik and Vendela", NULL, NULL);
 
 
-	if (window == NULL) {
-		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
-	
-	glfwMakeContextCurrent(window);
-	glewExperimental = true; // Needed for core profile
-	if (glewInit() != GLEW_OK) {
-		
-	}
+	//if (window == NULL) {
+	//	fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
+	//	getchar();
+	//	glfwTerminate();
+	//	return -1;
+	//}
+	//
+	//glfwMakeContextCurrent(window);
+	//glewExperimental = true; // Needed for core profile
+	//if (glewInit() != GLEW_OK) {
+	//	
+	//}
 
-	// register debug functions before talking to OpenGL
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(glDebugOutput, nullptr);
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+	//// register debug functions before talking to OpenGL
+	//glEnable(GL_DEBUG_OUTPUT);
+	//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	//glDebugMessageCallback(glDebugOutput, nullptr);
+	//glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 
-	
+	//
 
-	glEnable(GL_DEPTH_TEST);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glDepthMask(GL_TRUE);
-	glClearDepth(1.0f);
-	//glDepthFunc(GL_LESS);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	//glEnable(GL_DEPTH_TEST);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	////glDepthMask(GL_TRUE);
+	//glClearDepth(1.0f);
+	////glDepthFunc(GL_LESS);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-	shader = new Shader("VertexShader.glsl", "FragmentShader.glsl");
-	shader->useShader();
-	createMatrix();
-	CreateObject();
+	//shader = new Shader("VertexShader.glsl", "FragmentShader.glsl");
+	//shader->useShader();
+	//createMatrix();
+	//CreateObject();
 	return 1;
 }
 
@@ -248,7 +247,7 @@ void SetupImGui() {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::StyleColorsDark();
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(testW->_window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");
 }
 
@@ -297,7 +296,7 @@ void Render()
 	ImGui::Render();
 
 	int display_w, display_h;
-	glfwGetFramebufferSize(window, &display_w, &display_h);
+	glfwGetFramebufferSize(testW->_window, &display_w, &display_h);
 	glViewport(0, 0, display_w, display_h);
 	glClearColor(gClearColour.x, gClearColour.y, gClearColour.z, gClearColour.w);
 
@@ -314,8 +313,8 @@ void Render()
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	//Uppdatera till window
-	glfwMakeContextCurrent(window);
-	glfwSwapBuffers(window);
+	glfwMakeContextCurrent(testW->_window);
+	glfwSwapBuffers(testW->_window);
 }
 
 void CloseProgram() {
@@ -329,7 +328,7 @@ void CloseProgram() {
 	glDeleteVertexArrays(1, &VA);
 	shader->~Shader();
 
-	glfwDestroyWindow(window);
+	glfwDestroyWindow(testW->_window);
 	glfwTerminate();
 }
 
